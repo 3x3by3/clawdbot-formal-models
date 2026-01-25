@@ -43,7 +43,10 @@ policy layer, later layers cannot re-enable it.
 
 **Source:** `clawdbot/docs/multi-agent-sandbox-tools.md` (Tool Restrictions order)
 
-**Status:** TODO (encode and model-check)
+**TLA+ invariant:** `Inv_DenyWins` in `tla/specs/ToolPolicyPrecedence.tla`
+
+**Scenarios:**
+- `tla/models/precedence_min.cfg`
 
 ---
 
