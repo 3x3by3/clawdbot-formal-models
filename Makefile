@@ -1,7 +1,7 @@
 TLC=./bin/tlc
 MODEL?=tla/models/basic.cfg
 
-.PHONY: tlc precedence precedence-negative groups groups-negative elevated elevated-negative nodes-policy nodes-policy-negative attacker attacker-negative attacker-nodes-negative attacker-nodes-allowlist attacker-nodes-allowlist-negative
+.PHONY: tlc precedence precedence-negative groups groups-negative elevated elevated-negative nodes-policy nodes-policy-negative attacker attacker-negative attacker-nodes-negative attacker-nodes-allowlist attacker-nodes-allowlist-negative approvals approvals-negative
 
 # Run TLC with a pinned, in-repo model config
 
@@ -58,3 +58,10 @@ attacker-nodes-allowlist:
 
 attacker-nodes-allowlist-negative:
 	$(TLC) -workers auto -deadlock -config tla/models/attacker_nodes_allowlist_negative.cfg tla/specs/AttackerHarness_NodesAllowlist.tla
+
+# Approvals lifecycle (nodes.run)
+approvals:
+	$(TLC) -workers auto -deadlock -config tla/models/approvals_ok.cfg tla/specs/AttackerHarness_Approvals.tla
+
+approvals-negative:
+	$(TLC) -workers auto -deadlock -config tla/models/approvals_negative_ignore_approval.cfg tla/specs/AttackerHarness_Approvals_BadIgnoresApproval.tla
