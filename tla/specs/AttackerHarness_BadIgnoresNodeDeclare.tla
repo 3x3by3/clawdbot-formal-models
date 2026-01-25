@@ -1,57 +1,41 @@
------------------------------- MODULE AttackerHarness ------------------------------
+------------------------------ MODULE AttackerHarness_BadIgnoresNodeDeclare ------------------------------
 EXTENDS Naturals, Sequences, FiniteSets
 
 (******************************************************************************
-* AttackerHarness.tla
-*
-* Minimal attacker-driven model (non-tautological):
-*   - Attacker sends tool requests in a shared session.
-*   - Agent decides whether to execute based on an explicit policy table.
-*   - We check trace properties over ExecutedActions.
-*
-* This is deliberately small but captures the *shape* of prompt-injection risk:
-* "an untrusted sender causes a forbidden tool to execute".
+* Negative test: buggy attacker harness where nodes.run ignores declaredCommands.
 ******************************************************************************)
 
 CONSTANTS
-  Tools,              \* finite set of tool ids (strings)
-  SensitiveTools,     \* subset of Tools considered security-critical
-  PolicyAllowShared,  \* subset of Tools allowed to execute in shared sessions
-  PolicyAllowMain,    \* subset of Tools allowed to execute in main sessions
-
-  \* Nodes policy inputs (for nodes.run)
-  NodesRunTool,       \* tool id representing nodes.run (string)
+  Tools,
+  SensitiveTools,
+  PolicyAllowShared,
+  PolicyAllowMain,
+  NodesRunTool,
   NodeCommandAllowlisted,
   NodeCommandDeclared,
-
-  MaxQueueLen,        \* bound inbox length (keeps TLC finite)
-  MaxExecLen          \* bound executed length
+  MaxQueueLen,
+  MaxExecLen
 
 ASSUME
   /\ Tools /= {}
   /\ SensitiveTools \subseteq Tools
   /\ PolicyAllowShared \subseteq Tools
   /\ PolicyAllowMain \subseteq Tools
-
   /\ NodesRunTool \in Tools
   /\ NodeCommandAllowlisted \in BOOLEAN
   /\ NodeCommandDeclared \in BOOLEAN
-
   /\ MaxQueueLen \in 0..5
   /\ MaxExecLen \in 0..5
 
 SessionTypes == {"main", "shared"}
 
-VARIABLES
-  sessionType,        \* "main" or "shared"
-  inbox,              \* Seq(Tools) pending tool requests
-  executed            \* Seq(Tools) executed tools in order
-
+VARIABLES sessionType, inbox, executed
 vars == << sessionType, inbox, executed >>
 
+\* BUG: ignores NodeCommandDeclared
 Allowed(t) ==
   LET policyOk == IF sessionType = "shared" THEN t \in PolicyAllowShared ELSE t \in PolicyAllowMain
-      nodesOk == IF t = NodesRunTool THEN (NodeCommandAllowlisted /\ NodeCommandDeclared) ELSE TRUE
+      nodesOk == IF t = NodesRunTool THEN NodeCommandAllowlisted ELSE TRUE
   IN  policyOk /\ nodesOk
 
 Init ==
@@ -59,14 +43,12 @@ Init ==
   /\ inbox = << >>
   /\ executed = << >>
 
-\* Attacker can request any tool any time.
 AttackerSend(t) ==
   /\ t \in Tools
   /\ Len(inbox) < MaxQueueLen
   /\ inbox' = Append(inbox, t)
   /\ UNCHANGED << sessionType, executed >>
 
-\* Agent processes the head of the inbox.
 AgentStep ==
   /\ Len(inbox) > 0
   /\ LET t == Head(inbox)
@@ -80,12 +62,8 @@ Next ==
 
 Spec == Init /\ [][Next]_vars
 
-\* --- Security property (non-tautological):
-\* In shared sessions, the agent never executes sensitive tools.
 Inv_NoSensitiveExecInShared ==
   sessionType = "shared" =>
     \A i \in 1..Len(executed): executed[i] \notin SensitiveTools
-
-THEOREM Spec => []Inv_NoSensitiveExecInShared
 
 =============================================================================
