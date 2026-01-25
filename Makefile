@@ -1,7 +1,7 @@
 TLC=./bin/tlc
 MODEL?=tla/models/basic.cfg
 
-.PHONY: tlc precedence precedence-negative groups groups-negative elevated elevated-negative nodes-policy nodes-policy-negative attacker attacker-negative attacker-nodes-negative
+.PHONY: tlc precedence precedence-negative groups groups-negative elevated elevated-negative nodes-policy nodes-policy-negative attacker attacker-negative attacker-nodes-negative attacker-nodes-allowlist attacker-nodes-allowlist-negative
 
 # Run TLC with a pinned, in-repo model config
 
@@ -51,3 +51,10 @@ attacker-negative:
 # Nodes extension: declaredCommands must gate nodes.run
 attacker-nodes-negative:
 	$(TLC) -workers auto -deadlock -config tla/models/attacker_negative_nodes_declared_missing.cfg tla/specs/AttackerHarness_BadIgnoresNodeDeclare.tla
+
+# Attacker harness with derived node-command allowlist
+attacker-nodes-allowlist:
+	$(TLC) -workers auto -deadlock -config tla/models/attacker_nodes_allowlist_ok.cfg tla/specs/AttackerHarness_NodesAllowlist.tla
+
+attacker-nodes-allowlist-negative:
+	$(TLC) -workers auto -deadlock -config tla/models/attacker_nodes_allowlist_negative.cfg tla/specs/AttackerHarness_NodesAllowlist.tla
