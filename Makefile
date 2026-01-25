@@ -1,7 +1,7 @@
 TLC=./bin/tlc
 MODEL?=tla/models/basic.cfg
 
-.PHONY: tlc precedence precedence-negative groups groups-negative elevated elevated-negative nodes-policy nodes-policy-negative
+.PHONY: tlc precedence precedence-negative groups groups-negative elevated elevated-negative nodes-policy nodes-policy-negative attacker attacker-negative
 
 # Run TLC with a pinned, in-repo model config
 
@@ -39,3 +39,11 @@ nodes-policy:
 
 nodes-policy-negative:
 	$(TLC) -workers auto -config tla/models/nodes_policy_negative_bad_impl_allows_undeclared.cfg tla/specs/NodesCommandPolicy_BadNoDeclareCheck.tla
+
+# Attacker harness (shared-channel adversary)
+
+attacker:
+	$(TLC) -workers auto -deadlock -config tla/models/attacker_ok.cfg tla/specs/AttackerHarness.tla
+
+attacker-negative:
+	$(TLC) -workers auto -deadlock -config tla/models/attacker_negative_policy_allows_memory.cfg tla/specs/AttackerHarness.tla
