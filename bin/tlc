@@ -1,5 +1,47 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 JAR="$ROOT_DIR/tools/tla/tla2tools.jar"
+
+# TLC requires a working Java runtime. On macOS, `/usr/bin/java` may exist but
+# be a stub that triggers a GUI prompt ("Unable to locate a Java Runtime").
+# Try a few common discovery paths before failing with a clear message.
+
+java_works() {
+  command -v java >/dev/null 2>&1 || return 1
+  java -version >/dev/null 2>&1
+}
+
+ensure_java_from_home() {
+  local home="$1"
+  if [[ -x "$home/bin/java" ]]; then
+    export JAVA_HOME="$home"
+    export PATH="$JAVA_HOME/bin:$PATH"
+  fi
+}
+
+# 1) If `java` is missing OR is the macOS stub, try to locate a real JDK.
+if ! java_works; then
+  # Try Apple java_home registry first.
+  if [[ -x "/usr/libexec/java_home" ]]; then
+    if JAVA_HOME_CANDIDATE="$(/usr/libexec/java_home 2>/dev/null)"; then
+      ensure_java_from_home "$JAVA_HOME_CANDIDATE"
+    fi
+  fi
+
+  # Homebrew OpenJDK (Apple Silicon)
+  if ! java_works; then
+    ensure_java_from_home "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
+  fi
+  if ! java_works; then
+    ensure_java_from_home "/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home"
+  fi
+fi
+
+if ! java_works; then
+  echo "error: Java runtime not found. Install OpenJDK (e.g. 'brew install openjdk@21') and ensure 'java' works (or set JAVA_HOME)." >&2
+  exit 1
+fi
+
 exec java -cp "$JAR" tlc2.TLC "$@"
