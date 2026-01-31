@@ -19,7 +19,10 @@ function extractObject(name) {
 
 const groupsSrc = extractObject('TOOL_GROUPS');
 const aliasesSrc = (() => {
-  const re = new RegExp(`const TOOL_NAME_ALIASES\\s*:\\s*Record<[^>]+>\\s*=\\s*({[\\s\\S]*?^});`, 'm');
+  const re = new RegExp(
+    `const TOOL_NAME_ALIASES\\s*:\\s*Record<[^>]+>\\s*=\\s*({[\\s\\S]*?^});`,
+    'm'
+  );
   const m = text.match(re);
   if (!m) throw new Error(`Could not find TOOL_NAME_ALIASES in ${SRC}`);
   return m[1];
@@ -39,6 +42,16 @@ function evalObjectLiteral(src) {
 
 const groups = evalObjectLiteral(groupsSrc);
 const aliases = evalObjectLiteral(aliasesSrc);
+
+// Back-compat: project rename.
+// The models historically used `group:clawdbot`. Openclaw renamed this to `group:openclaw`.
+// Keep both keys to avoid churn in downstream specs/tests that reference the historical name.
+if (groups['group:openclaw'] && !groups['group:clawdbot']) {
+  groups['group:clawdbot'] = groups['group:openclaw'];
+}
+if (groups['group:clawdbot'] && !groups['group:openclaw']) {
+  groups['group:openclaw'] = groups['group:clawdbot'];
+}
 
 fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, JSON.stringify({ groups, aliases }, null, 2));
