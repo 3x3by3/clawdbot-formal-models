@@ -39,7 +39,7 @@
     "group:nodes": [
       "nodes"
     ],
-    "group:clawdbot": [
+    "group:moltbot": [
       "browser",
       "canvas",
       "nodes",
