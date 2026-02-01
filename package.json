@@ -1,0 +1,48 @@
+{
+  "name": "clawdbot-formal-models",
+  "version": "1.0.0",
+  "description": "Formal TLA+ security models for Clawdbot with programmatic API",
+  "type": "module",
+  "main": "api/index.mjs",
+  "types": "api/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./api/index.d.ts",
+      "import": "./api/index.mjs"
+    },
+    "./api": {
+      "types": "./api/index.d.ts",
+      "import": "./api/index.mjs"
+    }
+  },
+  "scripts": {
+    "extract-tool-groups": "node scripts/extract-tool-groups.mjs",
+    "gen-cfg": "node scripts/gen-tla-cfg-from-tool-groups.mjs",
+    "sync": "npm run extract-tool-groups && npm run gen-cfg",
+    "test:api": "node api/test.mjs",
+    "list-models": "node -e \"import('./api/index.mjs').then(m => console.log(m.listModels().map(t => t.name).join('\\n')))\"",
+    "list-domains": "node -e \"import('./api/index.mjs').then(m => console.log(m.listDomains().join('\\n')))\""
+  },
+  "keywords": [
+    "tla+",
+    "tlc",
+    "formal-verification",
+    "security",
+    "model-checking"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/3x3by3/clawdbot-formal-models"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "api/",
+    "bin/",
+    "tla/",
+    "generated/",
+    "Makefile"
+  ]
+}
