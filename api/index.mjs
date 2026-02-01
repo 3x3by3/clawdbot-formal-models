@@ -293,6 +293,10 @@ export async function runModel(targetOrSpec, options = {}) {
     deadlock = options.deadlock ?? target.deadlock;
   }
 
+  // Convert absolute paths to relative paths for TLC (TLC has issues with absolute paths when spawned)
+  const relativeSpec = path.relative(ROOT_DIR, spec);
+  const relativeConfig = path.relative(ROOT_DIR, config);
+
   // Build TLC arguments
   const args = [];
 
@@ -306,8 +310,8 @@ export async function runModel(targetOrSpec, options = {}) {
     args.push('-deadlock');
   }
 
-  args.push('-config', config);
-  args.push(spec);
+  args.push('-config', relativeConfig);
+  args.push(relativeSpec);
 
   // Run TLC
   const timeout = options.timeout ?? 300000;
