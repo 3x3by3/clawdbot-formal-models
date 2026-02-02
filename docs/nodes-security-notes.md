@@ -59,6 +59,7 @@ Notable default:
   - attacker harness negative: `make attacker-nodes-negative`
 - **NS2 (system.run gated + approvals):** `tla/specs/AttackerHarness_Approvals.tla` + `make approvals`
 
-TODO:
+## Planned coverage
+
 - **NS1 (no nodes actions from shared by default):** model actual tool policy resolution + session classification.
 - **NS5 (no bypass via groups/aliases/subagents):** compose attacker harness with conformance-derived tool groups + subagent model.
